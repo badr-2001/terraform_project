@@ -5,6 +5,13 @@ resource "aws_instance" "bei_front_instance" {
   subnet_id              = aws_subnet.bei_public_subnet.id
   associate_public_ip_address = true
 
+  user_data = <<-EOF
+              sudo yum update -y
+              curl -sL https://rpm.nodesource.com/setup_18.x | sudo bash -
+              sudo yum install -y nodejs
+              sudo npm install -g @angular/cli
+              EOF
+
   tags = {
     Name = "bei_front_instance"
   }
@@ -14,6 +21,11 @@ resource "aws_instance" "bei_back_instance" {
   ami                    = var.ami
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.bei_private_subnet.id
+
+  user_data = <<-EOF
+              sudo yum update -y
+              sudo yum install -y python3 python3-pip
+              EOF
 
   tags = {
     Name = "bei_back_instance"
