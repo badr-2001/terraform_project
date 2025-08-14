@@ -18,8 +18,6 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt-get install -y nodejs build-essential
 npm install -g @angular/cli http-server
 echo 'export badr1=5' >> /home/ubuntu/.bashrc
-
-
 EOF
 
   tags = { Name = "bei_front_instance" }
@@ -35,7 +33,6 @@ resource "aws_instance" "bei_back_instance" {
               sudo yum update -y
               sudo yum install -y python3 python3-pip
               EOF
-
   tags = {
     Name = "bei_back_instance"
   }
@@ -91,6 +88,11 @@ resource "aws_route_table_association" "public_assoc" {
 resource "aws_route_table" "private_rt" {
   vpc_id = data.aws_vpc.main_vpc.id
 
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+
   tags = {
     Name = "private-route-table"
   }
@@ -116,12 +118,53 @@ resource "aws_security_group" "front_sg" {
   }
    egress {
     from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    to_port     = 0 // Do we really need to open all ports ? i don t think so 
+    protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
     Name = "front_sg"
+  }
+}
+
+resource "aws_security_group" "front_sg" {
+  name        = "back-instance-sg"
+  description = "Security group for back instance"
+  vpc_id      = data.aws_vpc.main_vpc.id
+
+  ingress {
+    description = "SSH from any IP (testing purposes)"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+   egress {
+    from_port   = 0
+    to_port     = 0 // Do we really need to open all ports ? i don t think so 
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "back_sg"
+  }
+}
+
+
+## Nat Gateway setup for downloading python package -----------------
+resource "aws_eip" "nat_eip" {
+  tags = {
+    Name = "nat-eip"
+  }
+}
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.bei_public_subnet.id
+
+  tags = {
+    Name = "main-nat"
   }
 }
