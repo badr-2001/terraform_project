@@ -28,6 +28,8 @@ resource "aws_instance" "bei_back_instance" {
   ami                    = var.ami
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.bei_private_subnet.id
+  vpc_security_group_ids = [aws_security_group.back_sg.id]
+
 
   user_data = <<-EOF
               sudo yum update -y
@@ -128,7 +130,7 @@ resource "aws_security_group" "front_sg" {
   }
 }
 
-resource "aws_security_group" "front_sg" {
+resource "aws_security_group" "back_sg" {
   name        = "back-instance-sg"
   description = "Security group for back instance"
   vpc_id      = data.aws_vpc.main_vpc.id
@@ -138,7 +140,8 @@ resource "aws_security_group" "front_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.front_sg.id]
+
   }
    egress {
     from_port   = 0
