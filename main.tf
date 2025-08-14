@@ -42,3 +42,8 @@ resource "aws_subnet" "bei_private_subnet" {
     Name = "bei_private-subnet"
   }
 }
+
+## Internet Gateway -----------------------------
+data "aws_internet_gateway" "igw" {
+  internet_gateway_id = var.igw_id
+}
