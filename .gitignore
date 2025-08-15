@@ -1,9 +1,12 @@
 *.tfstate
 *.tfstate.*
 .terraform/
-*.backup
-*.log
+*.
+*.lbackupog
 crash.log
 *.tfvars
 *.tfplan
 .terraform.lock.hcl
+
+*.pub
+terraform-key
