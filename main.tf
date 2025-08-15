@@ -6,6 +6,8 @@ resource "aws_instance" "bei_front_instance" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.front_sg.id]
   user_data_replace_on_change = true
+  key_name = aws_key_pair.project_key.key_name
+
 
   user_data = <<EOF
 #!/bin/bash
@@ -29,12 +31,20 @@ resource "aws_instance" "bei_back_instance" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.bei_private_subnet.id
   vpc_security_group_ids = [aws_security_group.back_sg.id]
+  key_name = aws_key_pair.project_key.key_name
+  user_data_replace_on_change = true
+
 
 
   user_data = <<-EOF
-              sudo yum update -y
-              sudo yum install -y python3 python3-pip
-              EOF
+#cloud-config
+package_update: true
+packages:
+  - python3
+  - python3-pip
+  - python-is-python3
+EOF
+
   tags = {
     Name = "bei_back_instance"
   }
@@ -140,7 +150,7 @@ resource "aws_security_group" "back_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    security_groups = [aws_security_group.front_sg.id]
+    cidr_blocks = ["0.0.0.0/0"]
 
   }
    egress {
@@ -170,4 +180,11 @@ resource "aws_nat_gateway" "nat" {
   tags = {
     Name = "main-nat"
   }
+}
+
+## SSH Key pairs -------------------
+
+resource "aws_key_pair" "project_key" {
+  key_name   = "terraform-key"
+  public_key = file("${path.module}/terraform-key.pub")
 }
