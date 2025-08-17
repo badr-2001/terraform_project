@@ -194,6 +194,14 @@ module "bei_back_instance" {
   EOF
 }
 
-output "front_public_ip" { value = module.bei_front_instance.public_ip }
-output "back_private_ip" { value = module.bei_back_instance.private_ip }
+## Backend Setup
+
+module "backend" {
+  source      = "./modules/backend"
+  bucket_name = "bei2-bucket"
+}
+
+
+
+
 
