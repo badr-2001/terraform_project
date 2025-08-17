@@ -1,4 +1,4 @@
-resource "aws_security_group" "sg" {
+resource "aws_security_group" "this" {
   name        = var.sg_name
   description = var.sg_description
   vpc_id      = var.vpc_id
@@ -24,7 +24,5 @@ resource "aws_security_group" "sg" {
     }
   }
 
-  tags = {
-    Name = var.sg_name
-  }
+  tags = { Name = var.sg_name }
 }
