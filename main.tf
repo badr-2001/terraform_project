@@ -75,13 +75,13 @@ resource "aws_security_group" "front_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #not a real case , we must specify a range of IPs that we trust 
   }
 
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"           # must be a string
+    protocol    = "-1"           # all protocols
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -94,7 +94,7 @@ resource "aws_security_group" "back_sg" {
   vpc_id      = data.aws_vpc.main_vpc.id
 
   ingress {
-    description = "SSH from any IP (testing purposes)"
+    description = "SSH from any IP (testing purposes)" 
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -104,7 +104,7 @@ resource "aws_security_group" "back_sg" {
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"           # must be a string
+    protocol    = "-1"         
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -124,7 +124,7 @@ resource "aws_nat_gateway" "nat" {
 }
 
 ## SSH Key pair -------------------
-resource "aws_key_pair" "project_key" {
+resource "aws_key_pair" "project_key" { ##Register my SSH public key so I can use it later
   key_name   = var.kp_name
   public_key = file(var.public_key_path)
 }
@@ -137,7 +137,7 @@ resource "aws_instance" "bei_front_instance" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.front_sg.id]
   key_name                    = aws_key_pair.project_key.key_name
-  user_data_replace_on_change = true
+  user_data_replace_on_change = true #If the user_data script changes, destroy and recreate the instance with the new script.
 
   user_data = <<EOF
 #!/bin/bash
@@ -177,5 +177,5 @@ EOF
 }
 
 
-output "front_public_ip"  { value = aws_instance.bei_front_instance.public_ip }
-output "back_private_ip"  { value = aws_instance.bei_back_instance.private_ip }
+output "front_public_ip"  { value = aws_instance.bei_front_instance.public_ip } ##ONLY TESTING PURPOSES
+output "back_private_ip"  { value = aws_instance.bei_back_instance.private_ip } ##ONLY TESTING PURPOSES
