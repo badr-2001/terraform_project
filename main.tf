@@ -117,14 +117,14 @@ module "key_pair" {
 # --- NAT EIP + NAT Gateway in the public subnet ---
 module "nat_eip" {
   source = "./modules/eip"
-  name   = "nat-eip"
+  name   = var.nat_eip_name
 }
 
 module "nat" {
   source        = "./modules/nat"
   allocation_id = module.nat_eip.allocation_id
   subnet_id     = module.bei_public_subnet_1.id
-  name          = "main-nat"
+  name          = var.nat_name
 }
 
 module "private_rt" {
@@ -161,7 +161,7 @@ module "igw" {
   create_igw      = false
   existing_igw_id = var.igw_id
   vpc_id          = module.vpc.id
-  igw_name        = "main-igw"
+  igw_name        = var.igw_name
 }
 
 module "public_rt" {

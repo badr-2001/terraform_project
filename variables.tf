@@ -86,3 +86,12 @@ variable "sg_name" {
 variable "kp_name" {
   type = string
 }
+variable "nat_name" {
+  type = string
+}
+variable "nat_eip_name" {
+  type = string
+}
+variable "igw_name" {
+  type = string
+}
