@@ -37,3 +37,33 @@ variable "private_az" {
   type        = string
   default     = null
 }
+
+variable "igw_name" {
+  type = string
+}
+variable "public_subnet_name" {
+  type = string
+}
+variable "private_subnet_name" {
+  type = string
+}
+
+variable "rt_name" {
+  type = string
+}
+
+variable "nat_eip_name" {
+  type = string
+}
+variable "nat_name" {
+  type = string
+}
+variable "kp_name" {
+  type = string
+}
+variable "ec2_name_front" {
+  type = string
+}
+variable "ec2_name_back" {
+  type = string
+}

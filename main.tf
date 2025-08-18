@@ -3,8 +3,6 @@ module "vpc" {
   source          = "./modules/vpc"
   create_vpc      = false
   existing_vpc_id = var.vpc_id
-  cidr_block      = null
-  
 }
 
 # --- Internet Gateway ---
@@ -13,7 +11,7 @@ module "igw" {
   create_igw      = false
   existing_igw_id = var.igw_id
   vpc_id          = module.vpc.id
-  igw_name        = "main-igw"
+  igw_name        = var.igw_name
 }
 
 # --- Subnets ---
@@ -21,7 +19,7 @@ module "public_subnet" {
   source            = "./modules/subnet"
   vpc_id            = module.vpc.id
   cidr_block        = var.public_subnet_cidr
-  subnet_name       = "bei_public-subnet"
+  subnet_name       = var.public_subnet_name
   availability_zone = var.public_az
 }
 
@@ -29,7 +27,7 @@ module "private_subnet" {
   source            = "./modules/subnet"
   vpc_id            = module.vpc.id
   cidr_block        = var.private_subnet_cidr
-  subnet_name       = "bei_private-subnet"
+  subnet_name       = var.private_subnet_name
   availability_zone = var.private_az
 }
 
@@ -37,7 +35,7 @@ module "private_subnet" {
 module "public_rt" {
   source = "./modules/route_table"
   vpc_id = module.vpc.id
-  name   = "public-route-table"
+  name   = var.rt_name
   routes = [
     {
       cidr_block     = "0.0.0.0/0"
@@ -56,14 +54,14 @@ module "public_assoc" {
 # --- NAT EIP + NAT Gateway in the public subnet ---
 module "nat_eip" {
   source = "./modules/eip"
-  name   = "nat-eip"
+  name   = var.nat_eip_name
 }
 
 module "nat" {
   source        = "./modules/nat"
   allocation_id = module.nat_eip.allocation_id
   subnet_id     = module.public_subnet.id
-  name          = "main-nat"
+  name          = var.nat_name
 }
 
 # --- Private Route Table + route to NAT ---
@@ -142,7 +140,7 @@ module "back_sg" {
 # --- SSH Key Pair ---
 module "key_pair" {
   source     = "./modules/key_pair"
-  key_name   = "terraform-key"
+  key_name   = var.kp_name
   public_key = file(var.public_key_path)
 }
 
@@ -155,7 +153,7 @@ module "bei_front_instance" {
   associate_public_ip_address = true
   sg_ids                      = [module.front_sg.id]
   key_name                    = module.key_pair.key_name
-  tag_name                    = "bei_front_instance"
+  tag_name                    = var.ec2_name_front
   user_data_replace_on_change = true
 
   user_data = <<-EOF
@@ -181,7 +179,7 @@ module "bei_back_instance" {
   associate_public_ip_address = false
   sg_ids                      = [module.back_sg.id]
   key_name                    = module.key_pair.key_name
-  tag_name                    = "bei_back_instance"
+  tag_name                    = var.ec2_name_back
   user_data_replace_on_change = true
 
   user_data = <<-EOF
@@ -194,12 +192,6 @@ module "bei_back_instance" {
   EOF
 }
 
-## Backend Setup
-
-module "backend" {
-  source      = "./modules/backend"
-  bucket_name = "bei2-bucket"
-}
 
 
 
