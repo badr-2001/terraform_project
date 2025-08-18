@@ -12,7 +12,7 @@ ec2_name_front = "bei_front_instance"
 ec2_name_back = "bei_back_instance"
 
 
-
+#others
 igw_id="igw-03bbadaf5696df44a"
 igw_name="main-igw"
 public_key_path = "./terraform-key.pub"
