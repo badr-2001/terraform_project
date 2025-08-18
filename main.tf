@@ -42,11 +42,19 @@ module "bei_ec2_private_1" {
   source = "./modules/ec2"
   ami = var.ami
   instance_type = var.instance_type
-  subnet_id = module.bei_public_subnet_1.id
+  subnet_id = module.bei_private_subnet_1.id
   associate_public_ip_address = false
   sg_ids = [module.back_sg.id]
   key_name = module.key_pair.key_name
-  user_data = null
+  user_data = <<-EOF
+#!/bin/bash
+set -eux
+apt-get update -y
+apt-get install -y nginx
+systemctl enable nginx
+systemctl start nginx
+echo "OK from $(hostname)" > /var/www/html/index.html
+EOF
   user_data_replace_on_change = true
   tag_name = "bei2_ec2_private_1"
 }
@@ -55,11 +63,19 @@ module "bei_ec2_private_2" {
   source = "./modules/ec2"
   ami = var.ami
   instance_type = var.instance_type
-  subnet_id = module.bei_public_subnet_2.id
+  subnet_id = module.bei_private_subnet_2.id
   associate_public_ip_address = false
   sg_ids = [module.back_sg.id]
   key_name = module.key_pair.key_name
-  user_data = null
+  user_data = <<-EOF
+#!/bin/bash
+set -eux
+apt-get update -y
+apt-get install -y nginx
+systemctl enable nginx
+systemctl start nginx
+echo "OK from $(hostname)" > /var/www/html/index.html
+EOF
   user_data_replace_on_change = true
   tag_name = "bei2_ec2_private_2"
 }
@@ -172,6 +188,29 @@ module "public_assoc2" {
   route_table_id = module.public_rt.id
 }
 
+##Loadbalancer
+module "alb" {
+  source      = "./modules/alb"
+  vpc_id      = module.vpc.id
+  name        = "bei-lb"
+  subnet_ids  = [module.bei_public_subnet_1.id, module.bei_public_subnet_2.id]
+  target_port = 80
+  target_ids  = [module.bei_ec2_private_1.id, module.bei_ec2_private_2.id] 
+  depends_on = [ module.bei_ec2_private_1 , module.bei_ec2_private_2 ]
+}
+
+# Allow ALB → backend on port 80
+resource "aws_security_group_rule" "allow_alb_to_back_80" {
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  security_group_id        = module.back_sg.id          # target SG (your EC2s)
+  source_security_group_id = module.alb.sg_id           # source SG (the ALB)
+}
+
+
+output "alb_dns" { value = module.alb.dns_name }
 
 
 
