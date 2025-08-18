@@ -5,12 +5,14 @@ resource "aws_lb" "this" {
   internal           = false ##the ALB gets public IPs and a public DNS name.
   subnets            = var.subnet_ids
   security_groups    = [aws_security_group.alb_sg.id] ##subnets must be public (route to an Internet Gateway)
+  
 }
 
 resource "aws_security_group" "alb_sg" {
   name        = "${var.name}-sg"
   description = "ALB SG"
   vpc_id      = var.vpc_id
+
 
   ingress { # Who can call the ALB
     from_port   = 80

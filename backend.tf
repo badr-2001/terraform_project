@@ -1,4 +1,7 @@
-module "backend" {
-  source      = "./modules/backend"
-  bucket_name = "bei2-bucket"
-} 
+terraform {
+  backend "s3" {
+    bucket         = "bei22-bucket"
+    key            = "terraform.tfstate"
+    region         = "eu-west-1"
+  }
+}

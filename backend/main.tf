@@ -1,4 +1,4 @@
 module "backend" {
   source      = "../modules/backend"
-  bucket_name = "bei2-bucket"
+  bucket_name = "bei22-bucket"
 }
