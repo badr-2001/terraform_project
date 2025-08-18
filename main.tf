@@ -1,190 +1,88 @@
-## EC2 Instances ---------------------------------------
-resource "aws_instance" "bei_front_instance" {
-  ami                         = var.ami
-  instance_type               = var.instance_type
-  subnet_id                   = aws_subnet.bei_public_subnet.id
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.front_sg.id]
-  user_data_replace_on_change = true
-  key_name = aws_key_pair.project_key.key_name
-
-
-  user_data = <<EOF
-#!/bin/bash
-set -euxo pipefail
-export DEBIAN_FRONTEND=noninteractive
-
-apt-get update -y
-apt-get install -y ca-certificates curl gnupg
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt-get install -y nodejs build-essential
-npm install -g @angular/cli http-server
-echo 'export badr1=5' >> /home/ubuntu/.bashrc
-EOF
-
-  tags = { Name = "bei_front_instance" }
+## vpc
+variable "vpc_id" {
+  type        = string
+  description = "Existing VPC ID"
 }
 
-
-resource "aws_instance" "bei_back_instance" {
-  ami                    = var.ami
-  instance_type          = var.instance_type
-  subnet_id              = aws_subnet.bei_private_subnet.id
-  vpc_security_group_ids = [aws_security_group.back_sg.id]
-  key_name = aws_key_pair.project_key.key_name
-  user_data_replace_on_change = true
-
-
-
-  user_data = <<-EOF
-#cloud-config
-package_update: true
-packages:
-  - python3
-  - python3-pip
-  - python-is-python3
-EOF
-
-  tags = {
-    Name = "bei_back_instance"
-  }
+variable "public_subnet_cidr" {
+  type        = string
+  description = "CIDR for public subnet"
 }
 
-## VPC -----------------------------------------
-data "aws_vpc" "main_vpc" {
-   id = var.vpc_id
+variable "private_subnet_cidr" {
+  type        = string
+  description = "CIDR for private subnet"
 }
 
-## Subnets -----------------------------
-resource "aws_subnet" "bei_public_subnet" {
-  vpc_id                  = data.aws_vpc.main_vpc.id
-  cidr_block              = var.public_subnet_cidr
-
-  tags = {
-    Name = "bei_public-subnet"
-  }
+variable "public_subnet_name" {
+  type        = string
+  description = "Name tag for public subnet"
 }
 
-resource "aws_subnet" "bei_private_subnet" {
-  vpc_id                  = data.aws_vpc.main_vpc.id
-  cidr_block              = var.private_subnet_cidr
-
-  tags = {
-    Name = "bei_private-subnet"
-  }
+variable "private_subnet_name" {
+  type        = string
+  description = "Name tag for private subnet"
 }
 
-## Internet Gateway -----------------------------
-data "aws_internet_gateway" "igw" {
-  internet_gateway_id = var.igw_id
-}
-## Route Tables -----------------------------
-resource "aws_route_table" "public_rt" {
-  vpc_id = data.aws_vpc.main_vpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = data.aws_internet_gateway.igw.id
-  }
-
-  tags = {
-    Name = "public-route-table"
-  }
+## ec2
+variable "ami" {
+  type        = string
+  description = "AMI ID for instances"
 }
 
-resource "aws_route_table_association" "public_assoc" {
-  subnet_id      = aws_subnet.bei_public_subnet.id
-  route_table_id = aws_route_table.public_rt.id
+variable "instance_type" {
+  type        = string
+  description = "Instance type"
 }
 
-resource "aws_route_table" "private_rt" {
-  vpc_id = data.aws_vpc.main_vpc.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat.id
-  }
-
-  tags = {
-    Name = "private-route-table"
-  }
+variable "ec2_name_front" {
+  type        = string
+  description = "Name tag for front EC2"
 }
 
-resource "aws_route_table_association" "private_assoc" {
-  subnet_id      = aws_subnet.bei_private_subnet.id
-  route_table_id = aws_route_table.private_rt.id
+variable "ec2_name_back" {
+  type        = string
+  description = "Name tag for back EC2"
 }
 
-## Security Groups ---------------------------------
-resource "aws_security_group" "front_sg" {
-  name        = "front-instance-sg"
-  description = "Security group for front instance"
-  vpc_id      = data.aws_vpc.main_vpc.id
-
-  ingress {
-    description = "SSH from any IP (testing purposes)"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-   egress {
-    from_port   = 0
-    to_port     = 0 // Do we really need to open all ports ? i don t think so 
-    protocol    = -1
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "front_sg"
-  }
+## igw
+variable "igw_id" {
+  type        = string
+  description = "Existing Internet Gateway ID attached to the VPC"
 }
 
-resource "aws_security_group" "back_sg" {
-  name        = "back-instance-sg"
-  description = "Security group for back instance"
-  vpc_id      = data.aws_vpc.main_vpc.id
-
-  ingress {
-    description = "SSH from any IP (testing purposes)"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-
-  }
-   egress {
-    from_port   = 0
-    to_port     = 0 // Do we really need to open all ports ? i don t think so 
-    protocol    = -1
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "back_sg"
-  }
+variable "igw_name" {
+  type        = string
+  description = "(Unused here; kept for parity if you later create IGW via resource)"
+  default     = "main-igw"
 }
 
-
-## Nat Gateway setup for downloading python package -----------------
-resource "aws_eip" "nat_eip" {
-  tags = {
-    Name = "nat-eip"
-  }
+## key pair
+variable "public_key_path" {
+  type        = string
+  description = "Path to the public key file to upload"
 }
 
-resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.bei_public_subnet.id
-
-  tags = {
-    Name = "main-nat"
-  }
+variable "kp_name" {
+  type        = string
+  description = "Key pair name"
 }
 
-## SSH Key pairs -------------------
-
-resource "aws_key_pair" "project_key" {
-  key_name   = "terraform-key"
-  public_key = file("${path.module}/terraform-key.pub")
+## route table / nat names
+variable "rt_name" {
+  type        = string
+  description = "Name tag for the public route table"
 }
+
+variable "nat_eip_name" {
+  type        = string
+  description = "Name tag for the NAT EIP"
+}
+
+variable "nat_name" {
+  type        = string
+  description = "Name tag for the NAT Gateway"
+}
+
+output "front_public_ip"  { value = aws_instance.bei_front_instance.public_ip }
+output "back_private_ip"  { value = aws_instance.bei_back_instance.private_ip }

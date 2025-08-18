@@ -4,7 +4,7 @@
 *.
 *.lbackupog
 crash.log
-*.tfvars
+##*.tfvars
 *.tfplan
 .terraform.lock.hcl
 
