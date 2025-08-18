@@ -1,0 +1,12 @@
+SSH TO PRIVATE INSTANCE WITH POWERSHELL COMMAND: 
+
+ssh -o "ProxyCommand=ssh -i GIT_REPO_PATH/terraform-key -o IdentitiesOnly=yes -W %h:%p ubuntu@PUBLIC_INSTANCE_PUBLICIP" `
+    -i GIT_REPO_PATH/terraform-key -o IdentitiesOnly=yes `
+    ubuntu@PRIVATE_INSTANCE_PRIVATEIP
+
+
+SSH TO INSTANCE WITH POWERSHELL COMMAND: 
+
+ssh -i "GIT_REPO_PATH\terraform-key" -o IdentitiesOnly=yes ubuntu@PUBLIC_IP_PUBLICINSTANCE
+
+in my case GIT_REPO_PATH=C:\Users\Admin\Desktop\KodeMade\TPs\Terraform
