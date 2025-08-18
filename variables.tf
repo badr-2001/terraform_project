@@ -6,11 +6,18 @@ variable "igw_id" {
   type        = string
 }
 
-variable "public_subnet_cidr" {
+variable "public_subnet1_cidr" {
   type = string
 }
 
-variable "private_subnet_cidr" {
+variable "private_subnet1_cidr" {
+  type = string
+}
+variable "public_subnet2_cidr" {
+  type = string
+}
+
+variable "private_subnet2_cidr" {
   type = string
 }
 
@@ -36,4 +43,46 @@ variable "public_az" {
 variable "private_az" {
   type        = string
   default     = null
+}
+
+variable "public_subnet_az1" {
+  type = string
+}
+variable "private_subnet_az1" {
+  type = string
+}
+variable "public_subnet_az2" {
+  type = string
+}
+variable "private_subnet_az2" {
+  type = string
+}
+
+variable "public_subnet_name1" {
+    type = string
+}
+variable "private_subnet_name1" {
+    type = string
+}
+variable "public_subnet_name2" {
+    type = string
+}
+variable "private_subnet_name2" {
+    type = string
+}
+
+variable "ec2_name_private1" {
+  type = string
+}
+variable "ec2_name_private2" {
+  type = string
+}
+variable "sg_desc" {
+  type=string
+}
+variable "sg_name" {
+  type = string
+}
+variable "kp_name" {
+  type = string
 }

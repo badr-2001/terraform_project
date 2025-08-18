@@ -1,3 +1,4 @@
+## VPC and Subnets -------------------
 module "vpc" {
   source = "./modules/vpc"
   create_vpc = false
@@ -7,34 +8,34 @@ module "vpc" {
 module "bei_public_subnet_1" {
   source = "./modules/subnet"
   vpc_id = module.vpc.id
-  cidr_block = "172.31.10.0/28"
-  availability_zone = "eu-west-1a"
-  subnet_name="bei_public_subnet_1"
+  cidr_block = var.public_subnet1_cidr
+  availability_zone = var.public_subnet_az1
+  subnet_name=var.public_subnet_name1
   map_public_ip_on_launch = true
 }
 
 module "bei_private_subnet_1" {
   source = "./modules/subnet"
   vpc_id = module.vpc.id
-  cidr_block = "172.31.10.32/28"
-  availability_zone = "eu-west-1a"
-  subnet_name="bei_private_subnet_1"
+  cidr_block = var.private_subnet1_cidr
+  availability_zone = var.private_subnet_az1
+  subnet_name=var.private_subnet_name1
 }
 module "bei_public_subnet_2" {
   source = "./modules/subnet"
   vpc_id = module.vpc.id
-  cidr_block = "172.31.10.16/28"
-  availability_zone = "eu-west-1b"
-  subnet_name="bei_public_subnet_2"
+  cidr_block = var.public_subnet2_cidr
+  availability_zone = var.public_subnet_az2
+  subnet_name=var.public_subnet_name2
   map_public_ip_on_launch = true
 }
 
 module "bei_private_subnet_2" {
   source = "./modules/subnet"
   vpc_id = module.vpc.id
-  cidr_block = "172.31.10.48/28"
-  availability_zone = "eu-west-1b"
-  subnet_name="bei_private_subnet_2"
+  cidr_block = var.private_subnet2_cidr
+  availability_zone = var.private_subnet_az2
+  subnet_name=var.private_subnet_name2
 }
 
 
@@ -56,7 +57,7 @@ systemctl start nginx
 echo "OK from $(hostname)" > /var/www/html/index.html
 EOF
   user_data_replace_on_change = true
-  tag_name = "bei2_ec2_private_1"
+  tag_name = var.ec2_name_private1
 }
 
 module "bei_ec2_private_2" {
@@ -77,14 +78,14 @@ systemctl start nginx
 echo "OK from $(hostname)" > /var/www/html/index.html
 EOF
   user_data_replace_on_change = true
-  tag_name = "bei2_ec2_private_2"
+  tag_name = var.ec2_name_private2
 }
 
 module "back_sg" {
   source         = "./modules/sg"
   vpc_id         = module.vpc.id
-  sg_name        = "back-instance-sg"
-  sg_description = "Security group for back instance"
+  sg_name        = var.sg_name
+  sg_description = var.sg_desc
 
   ingress_rules = [
     {
@@ -109,7 +110,7 @@ module "back_sg" {
 
 module "key_pair" {
   source     = "./modules/key_pair"
-  key_name   = "terraform-key"
+  key_name   = var.kp_name
   public_key = file(var.public_key_path)
 }
 
@@ -196,7 +197,6 @@ module "alb" {
   subnet_ids  = [module.bei_public_subnet_1.id, module.bei_public_subnet_2.id]
   target_port = 80
   target_ids  = [module.bei_ec2_private_1.id, module.bei_ec2_private_2.id] 
-  depends_on = [ module.bei_ec2_private_1 , module.bei_ec2_private_2 ]
 }
 
 # Allow ALB → backend on port 80
@@ -205,8 +205,8 @@ resource "aws_security_group_rule" "allow_alb_to_back_80" {
   from_port                = 80
   to_port                  = 80
   protocol                 = "tcp"
-  security_group_id        = module.back_sg.id          # target SG (your EC2s)
-  source_security_group_id = module.alb.sg_id           # source SG (the ALB)
+  security_group_id        = module.back_sg.id         
+  source_security_group_id = module.alb.sg_id           
 }
 
 
