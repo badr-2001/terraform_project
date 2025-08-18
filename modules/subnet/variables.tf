@@ -5,3 +5,7 @@ variable "availability_zone" {
   type    = string
   default = null
 }
+variable "map_public_ip_on_launch" {
+  type = bool
+  default = false
+}
