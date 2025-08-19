@@ -189,6 +189,12 @@ module "public_assoc2" {
   route_table_id = module.public_rt.id
 }
 
+#create s3 for LB logs
+module "s3_logs" {
+  source      = "./modules/s3"
+  bucket_name = "bei-logs"
+}
+
 ##Loadbalancer
 module "alb" {
   source      = "./modules/alb"
@@ -197,6 +203,8 @@ module "alb" {
   subnet_ids  = [module.bei_public_subnet_1.id, module.bei_public_subnet_2.id]
   target_port = 80
   target_ids  = [module.bei_ec2_private_1.id, module.bei_ec2_private_2.id] 
+  log_bucket_name = module.s3_logs.bucket_name  
+
 }
 
 ##Allow ALB to reach backend on port 80
@@ -206,7 +214,8 @@ resource "aws_security_group_rule" "allow_alb_to_back_80" {
   to_port                  = 80
   protocol                 = "tcp"
   security_group_id        = module.back_sg.id         
-  source_security_group_id = module.alb.sg_id           
+  source_security_group_id = module.alb.sg_id
+             
 }
 
 

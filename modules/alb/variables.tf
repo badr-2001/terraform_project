@@ -13,3 +13,6 @@ variable "allowed_ingress_cidrs" {
   type    = list(string)
   default = ["0.0.0.0/0"]  # who can reach the ALB
 }
+variable "log_bucket_name" {
+  type = string
+}

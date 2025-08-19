@@ -5,6 +5,11 @@ resource "aws_lb" "this" {
   internal           = false ##the ALB gets public IPs and a public DNS name.
   subnets            = var.subnet_ids
   security_groups    = [aws_security_group.alb_sg.id] ##subnets must be public (route to an Internet Gateway)
+  access_logs {
+    bucket  = var.log_bucket_name
+    prefix  = "alb"
+    enabled = true
+  }
   
 }
 
