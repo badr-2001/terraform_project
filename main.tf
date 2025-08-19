@@ -159,6 +159,7 @@ module "bei_front_instance" {
     #!/bin/bash
     set -euxo pipefail
     export DEBIAN_FRONTEND=noninteractive
+    echo "6"
 
     apt-get update -y
     apt-get install -y ca-certificates curl gnupg
@@ -167,6 +168,8 @@ module "bei_front_instance" {
     npm install -g @angular/cli http-server
     echo 'export badr1=5' >> /home/ubuntu/.bashrc
   EOF
+    depends_on = [ module.nat ]
+
 }
 
 # --- EC2: Back (private) ---
@@ -183,10 +186,12 @@ module "bei_back_instance" {
 
   user_data = <<-EOF
     #cloud-config
+    echo "6"
     package_update: true
     packages:
       - python3
       - python3-pip
       - python-is-python3
   EOF
+  depends_on = [ module.nat ]
 }

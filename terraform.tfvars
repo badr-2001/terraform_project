@@ -8,8 +8,8 @@ public_subnet_name="bei_public-subnet"
 #ec2
 ami = "ami-01f23391a59163da9"
 instance_type="t3.micro"
-ec2_name_front = "bei_front_instance"
-ec2_name_back = "bei_back_instance"
+ec2_name_front = "1bei_front_instance"
+ec2_name_back = "1bei_back_instance"
 
 
 
