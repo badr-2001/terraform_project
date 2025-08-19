@@ -199,7 +199,7 @@ module "alb" {
   target_ids  = [module.bei_ec2_private_1.id, module.bei_ec2_private_2.id] 
 }
 
-# Allow ALB → backend on port 80
+##Allow ALB to reach backend on port 80
 resource "aws_security_group_rule" "allow_alb_to_back_80" {
   type                     = "ingress"
   from_port                = 80
