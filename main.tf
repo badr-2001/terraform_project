@@ -54,10 +54,11 @@ apt-get update -y
 apt-get install -y nginx
 systemctl enable nginx
 systemctl start nginx
-echo "OK from $(hostname)" > /var/www/html/index.html
+echo "OK! from $(hostname)" > /var/www/html/index.html
 EOF
   user_data_replace_on_change = true
   tag_name = var.ec2_name_private1
+  depends_on = [module.nat, module.private_rt]
 }
 
 module "bei_ec2_private_2" {
@@ -75,9 +76,10 @@ apt-get update -y
 apt-get install -y nginx
 systemctl enable nginx
 systemctl start nginx
-echo "OK from $(hostname)" > /var/www/html/index.html
+echo "OK! from $(hostname)" > /var/www/html/index.html
 EOF
   user_data_replace_on_change = true
+  depends_on = [module.nat, module.private_rt]
   tag_name = var.ec2_name_private2
 }
 
