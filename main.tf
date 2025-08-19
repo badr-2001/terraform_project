@@ -96,7 +96,7 @@ module "front_sg" {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["0.0.0.0/0"] ## in real world senarios , we give only the list of trusted ips
     }
   ]
 
@@ -105,7 +105,7 @@ module "front_sg" {
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["0.0.0.0/0"] ## in real world senarios , we give only the list of trusted ips , and allow only needed ports and protocols
     }
   ]
 }
@@ -122,16 +122,16 @@ module "back_sg" {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["0.0.0.0/0"] ## in real world senarios , we give only the list of trusted ips
     }
   ]
 
   egress_rules = [
     {
-      from_port   = 0
+      from_port   = 0 #and allow only needed ports and protocols
       to_port     = 0
       protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = ["0.0.0.0/0"] 
     }
   ]
 }
